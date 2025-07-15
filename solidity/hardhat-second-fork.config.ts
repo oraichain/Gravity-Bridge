@@ -1,7 +1,5 @@
-import "@nomiclabs/hardhat-waffle";
-import "hardhat-gas-reporter";
-import "hardhat-typechain";
-import { task } from "hardhat/config";
+import "@nomicfoundation/hardhat-toolbox";
+import { HardhatUserConfig, task } from "hardhat/config";
 
 task("accounts", "Prints the list of accounts", async (args, hre) => {
   const accounts = await hre.ethers.getSigners();
@@ -11,29 +9,27 @@ task("accounts", "Prints the list of accounts", async (args, hre) => {
   }
 });
 
-// // This is a sample Buidler task. To learn how to create your own go to
-// // https://buidler.dev/guides/create-task.html
-// task("accounts", "Prints the list of accounts", async (taskArgs, bre) => {
-//   const accounts = await bre.ethers.getSigners();
-
-//   for (const account of accounts) {
-//     console.log(await account.getAddress());
-//   }
-// });
-
-// You have to export an object to set up your config
-// This object can have the following optional entries:
-// defaultNetwork, networks, solc, and paths.
-// Go to https://buidler.dev/config/ to learn more
-module.exports = {
+const config: HardhatUserConfig = {
   // This is a sample solc configuration that specifies which version of solc to use
   solidity: {
-    version: "0.8.10",
-    settings: {
-      optimizer: {
-        enabled: true
-      }
-    }
+    compilers: [
+      {
+        version: "0.8.10",
+        settings: {
+          optimizer: {
+            enabled: true,
+          },
+        },
+      },
+      {
+        version: "0.8.20",
+        settings: {
+          optimizer: {
+            enabled: true,
+          },
+        },
+      },
+    ],
   },
   networks: {
     hardhat: {
@@ -48,12 +44,10 @@ module.exports = {
         interval: 2000
       }
     }
-
   },
   typechain: {
     outDir: "typechain",
-    target: "ethers-v5",
-    runOnCompile: true
+    target: "ethers-v6",
   },
   gasReporter: {
     enabled: true
@@ -62,3 +56,5 @@ module.exports = {
     timeout: 2000000
   }
 };
+
+export default config;

@@ -1,20 +1,21 @@
-import "@nomiclabs/hardhat-waffle";
-import "hardhat-gas-reporter";
-import "hardhat-typechain";
+import "@nomicfoundation/hardhat-toolbox";
 import "hardhat-contract-sizer";
 import { task, extendEnvironment } from "hardhat/config";
 import {
   HardhatNetworkAccountsUserConfig,
   HardhatUserConfig,
 } from "hardhat/types";
-import { ethers } from "ethers";
+import * as dotenv from "dotenv";
+
+dotenv.config();
+
+const PRIVATE_KEY = process.env.PRIVATE_KEY || "0x0000000000000000000000000000000000000000000000000000000000000000";
 
 task("accounts", "Prints the list of accounts", async (args, hre) => {
-  const accounts = hre.getSigners();
+  const accounts = await hre.ethers.getSigners();
 
   for (const account of accounts) {
     console.log(await account.getAddress());
-    // console.log(await account.getAddress());
   }
 });
 
@@ -59,6 +60,14 @@ const config: HardhatUserConfig = {
           },
         },
       },
+      {
+        version: "0.8.20",
+        settings: {
+          optimizer: {
+            enabled: true,
+          },
+        },
+      },
     ],
   },
   networks: {
@@ -74,10 +83,25 @@ const config: HardhatUserConfig = {
         interval: 2000,
       },
     },
+    bsc: {
+      url: "https://1rpc.io/bnb",
+      chainId: 56,
+      accounts: [PRIVATE_KEY],
+      timeout: 120000, // 2 minutes timeout
+      httpHeaders: {
+        "User-Agent": "hardhat",
+        "Content-Type": "application/json"
+      },
+      gas: "auto",
+      gasPrice: "auto",
+      gasMultiplier: 1.2,
+      allowUnlimitedContractSize: true,
+      blockGasLimit: 30000000,
+    },
   },
   typechain: {
     outDir: "typechain",
-    target: "ethers-v5",
+    target: "ethers-v6",
   },
   gasReporter: {
     enabled: true,
@@ -86,23 +110,5 @@ const config: HardhatUserConfig = {
     timeout: 2000000,
   },
 };
-
-declare module "hardhat/types/runtime" {
-  export interface HardhatRuntimeEnvironment {
-    provider: ethers.providers.Web3Provider;
-    getSigner: (
-      addressOrIndex?: string | number
-    ) => ethers.providers.JsonRpcSigner;
-    getSigners: (num?: number) => ethers.providers.JsonRpcSigner[];
-  }
-}
-
-extendEnvironment((hre) => {
-  // @ts-ignore
-  hre.provider = new ethers.providers.Web3Provider(hre.network.provider);
-  hre.getSigners = (num = 20) =>
-    [...new Array(num)].map((_, i) => hre.provider.getSigner(i));
-  hre.getSigner = (addressOrIndex) => hre.provider.getSigner(addressOrIndex);
-});
 
 export default config;
